@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId    String  @unique
+  name          String?
+  pointsBalance Int     @default(0)
+  starsBalance  Int     @default(0)
+
+  // Relation
+  attempts Attempt[]
+}
+
+model Attempt {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  points    Int      @default(0)
+  stars     Int      @default(0)
+  author    User?    @relation(fields: [authorId], references: [id])
+  authorId  String?  @db.ObjectId
+}

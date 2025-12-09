@@ -1,7 +1,7 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class TelegramInitDataDto {
-	@IsString()
-	@IsNotEmpty()
-	telegramInitData: string;
+  @IsString()
+  @IsNotEmpty()
+  telegramInitData!: string;
 }

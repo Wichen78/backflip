@@ -1,10 +1,10 @@
 export class AttemptResponseDto {
-	id: string;
-	points: number;
-	stars: number;
-	authorId: string | null;
+  id!: string;
+  points!: number;
+  stars!: number;
+  authorId!: string | null;
 
-	constructor(partial: Partial<AttemptResponseDto>) {
-		Object.assign(this, partial);
-	}
+  constructor(partial: Partial<AttemptResponseDto>) {
+    Object.assign(this, partial);
+  }
 }

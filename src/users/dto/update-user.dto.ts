@@ -1,17 +1,17 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateUserDto {
-	@IsOptional()
-	@IsString()
-	name?: string;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-	@IsOptional()
-	@IsInt()
-	@Min(0)
-	pointsBalance?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  pointsBalance?: number;
 
-	@IsOptional()
-	@IsInt()
-	@Min(0)
-	starsBalance?: number;
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  starsBalance?: number;
 }

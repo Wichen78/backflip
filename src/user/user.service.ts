@@ -5,16 +5,46 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { validateTelegramWebAppData } from 'common/utils/server-checks';
+import { PrismaService } from 'prisma/prisma.service';
 import { UserResponseDto } from './dto/user-response.dto';
-import { validateTelegramWebAppData } from '../common/utils/server-checks';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
-export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+export class UserService {
+  constructor(private readonly prisma: PrismaService) {
+  }
 
-  // POST /users
+  // POST /users from controller
+  async findById(id: string): Promise<UserResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return new UserResponseDto(user);
+  }
+
+  // GET /users/balance
+  async getBalanceById(id: string,): Promise<{ pointsBalance: number; starsBalance: number }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        pointsBalance: true,
+        starsBalance: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  // from auth guard
   async createOrUpdateUser(telegramInitData: string): Promise<UserResponseDto> {
     if (!telegramInitData) {
       throw new BadRequestException('Invalid request');
@@ -70,71 +100,10 @@ export class UsersService {
     }
   }
 
-  // GET /users/balance?telegramInitData=...
-  async getBalance(
-    telegramInitData: string,
-  ): Promise<{ pointsBalance: number; starsBalance: number }> {
-    const { validatedData, user: telegramUser } =
-      validateTelegramWebAppData(telegramInitData);
-
-    if (!validatedData) {
-      throw new ForbiddenException('Invalid Telegram data');
-    }
-
-    const telegramId =
-      process.env.NEXT_PUBLIC_BYPASS_TELEGRAM_AUTH === 'true'
-        ? process.env.USER_TEST
-        : telegramUser.id?.toString();
-
-    if (!telegramId) {
-      throw new ForbiddenException('Invalid user data');
-    }
-    const dbUser = await this.prisma.user.findUnique({
-      where: { telegramId },
-      select: {
-        pointsBalance: true,
-        starsBalance: true,
-      },
-    });
-
-    if (!dbUser) {
-      throw new NotFoundException('User not found');
-    }
-
-    return dbUser;
-  }
-
-  // POST /users
-  create2(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
-      data: {
-        telegramId: createUserDto.telegramId,
-        name: createUserDto.name ?? null,
-      },
-    });
-  }
-
-  // GET /users/:telegramId
+  // from auth guard
   async findByTelegramId(telegramId: string) {
     const user = await this.prisma.user.findUnique({
       where: { telegramId },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    return user;
-  }
-
-  // GET /users/:telegramId/balance
-  async getBalance2(telegramId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { telegramId },
-      select: {
-        pointsBalance: true,
-        starsBalance: true,
-      },
     });
 
     if (!user) {
